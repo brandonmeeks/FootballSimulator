@@ -15,7 +15,7 @@ let initState = {
     CurrentDown = 1
     YardLine = 25
     YardsToFirstDown = 10
-    PlaysRemaining = 120
+    PlaysRemaining = 10
     TeamOneScore = 0
     TeamTwoScore = 0
     }
@@ -23,6 +23,17 @@ let initState = {
 let rand = Random()
 
 let rec PlayGame gameState = 
+
+    if gameState.PlaysRemaining = 0
+    then
+        printfn "Game over! Final Score: "
+        printfn "Team One: %i" gameState.TeamOneScore
+        printfn "Team Two: %i" gameState.TeamTwoScore
+        printfn ""
+        printfn "Press any key to exit"
+        Console.ReadKey() |> ignore
+        exit 0
+
     printfn "Current Game State:"
     if gameState.Possession
     then printfn "Possession: Team One"
@@ -33,6 +44,7 @@ let rec PlayGame gameState =
     printfn "Number of plays remaining in game: %i" gameState.PlaysRemaining
     printfn "Team One Score: %i" gameState.TeamOneScore
     printfn "Team Two Score: %i" gameState.TeamTwoScore
+    printfn ""
 
     if gameState.Possession
     then
@@ -287,4 +299,3 @@ let rec PlayGame gameState =
             PlayGame gameState
 
 PlayGame initState
-Console.ReadKey() |> ignore
