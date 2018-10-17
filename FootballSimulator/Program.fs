@@ -15,7 +15,7 @@ let initState = {
     CurrentDown = 1
     YardLine = 25
     YardsToFirstDown = 10
-    PlaysRemaining = 10
+    PlaysRemaining = 120
     TeamOneScore = 0
     TeamTwoScore = 0
     }
@@ -86,7 +86,7 @@ let rec PlayGame gameState =
             else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
             then
                 let newPossession = false
-                let newYardLine  = 100 - gameState.YardLine
+                let newYardLine  = 100 - (gameState.YardLine + yardGain)
                 let newState = {
                     Possession = newPossession
                     CurrentDown = 1
@@ -144,7 +144,7 @@ let rec PlayGame gameState =
             else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
             then
                 let newPossession = false
-                let newYardLine  = 100 - gameState.YardLine
+                let newYardLine  = 100 - (gameState.YardLine + yardGain)
                 let newState = {
                     Possession = newPossession
                     CurrentDown = 1
@@ -211,7 +211,7 @@ let rec PlayGame gameState =
             else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
             then
                 let newPossession = true
-                let newYardLine  = 100 - gameState.YardLine
+                let newYardLine  = 100 - (gameState.YardLine + yardGain)
                 let newState = {
                     Possession = newPossession
                     CurrentDown = 1
@@ -269,7 +269,7 @@ let rec PlayGame gameState =
             else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
             then
                 let newPossession = true
-                let newYardLine  = 100 - gameState.YardLine
+                let newYardLine  = 100 - (gameState.YardLine + yardGain)
                 let newState = {
                     Possession = newPossession
                     CurrentDown = 1
