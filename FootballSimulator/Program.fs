@@ -1,4 +1,5 @@
 ﻿open System
+open System.Threading
 
 type gameState = {
     Possession : bool
@@ -89,6 +90,19 @@ let ExecutePlay gameState chosenPlay =
         printfn ""
         gameState
 
+let PrintField possession yardLine = 
+    if possession
+    then
+        let field = "|" + String('-',yardLine-1) + ">" + String('-',99-yardLine) + "|"
+        printfn ""
+        printfn "%s" field
+        printfn ""
+    else
+        let field = "|" + String('-',99-yardLine) + "<" + String('-',yardLine-1) + "|"
+        printfn ""
+        printfn "%s" field
+        printfn ""
+
 let rec PlayGame gameState = 
 
     if gameState.PlaysRemaining = 0
@@ -100,7 +114,9 @@ let rec PlayGame gameState =
         printfn "Press any key to exit"
         Console.ReadKey() |> ignore
         exit 0
-
+    
+    Thread.Sleep(1500)
+    Console.Clear()
     printfn "Current Game State:"
     if gameState.Possession
     then printfn "Possession: Team One"
@@ -111,7 +127,7 @@ let rec PlayGame gameState =
     printfn "Number of plays remaining in game: %i" gameState.PlaysRemaining
     printfn "Team One Score: %i" gameState.TeamOneScore
     printfn "Team Two Score: %i" gameState.TeamTwoScore
-    printfn ""
+    PrintField gameState.Possession gameState.YardLine
 
     if gameState.Possession
     then
