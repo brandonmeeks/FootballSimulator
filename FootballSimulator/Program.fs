@@ -22,6 +22,73 @@ let initState = {
 
 let rand = Random()
 
+let UpdateGameState gameState yardGain = 
+    if yardGain >= 100 - gameState.YardLine
+    then
+        let newState = {
+            Possession = not gameState.Possession
+            CurrentDown = 1
+            YardLine = 25
+            YardsToFirstDown = 10
+            PlaysRemaining = gameState.PlaysRemaining - 1
+            TeamOneScore = if gameState.Possession then gameState.TeamOneScore + 7 else gameState.TeamOneScore
+            TeamTwoScore = if gameState.Possession then gameState.TeamTwoScore else gameState.TeamTwoScore + 7
+        }
+        newState
+    else if yardGain >= gameState.YardsToFirstDown
+    then
+        let newState = {
+            Possession = gameState.Possession
+            CurrentDown = 1
+            YardLine = gameState.YardLine + yardGain
+            YardsToFirstDown = 10
+            PlaysRemaining = gameState.PlaysRemaining - 1
+            TeamOneScore = gameState.TeamOneScore
+            TeamTwoScore = gameState.TeamTwoScore
+        }
+        newState
+    else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
+    then
+        let newState = {
+            Possession = not gameState.Possession
+            CurrentDown = 1
+            YardLine = 100 - (gameState.YardLine + yardGain)
+            YardsToFirstDown = 10
+            PlaysRemaining = gameState.PlaysRemaining - 1
+            TeamOneScore = gameState.TeamOneScore
+            TeamTwoScore = gameState.TeamTwoScore
+        }
+        newState
+    else
+        let newState = {
+            Possession = gameState.Possession
+            CurrentDown = gameState.CurrentDown + 1
+            YardLine = gameState.YardLine + yardGain
+            YardsToFirstDown = gameState.YardsToFirstDown - yardGain
+            PlaysRemaining = gameState.PlaysRemaining - 1
+            TeamOneScore = gameState.TeamOneScore
+            TeamTwoScore = gameState.TeamTwoScore
+        }
+        newState
+
+let ExecutePlay gameState chosenPlay = 
+    if (gameState.Possession && chosenPlay = "1") || (not gameState.Possession && chosenPlay = "2")
+    then
+        printfn "Executing run play"
+        let yardGain = rand.Next(0,15) - 5
+        printfn "%i yards on the play!" yardGain
+        UpdateGameState gameState yardGain
+    else if (gameState.Possession && chosenPlay = "2") || (not gameState.Possession && chosenPlay = "1")
+    then
+        printfn "Executing pass play"
+        let yardGain = rand.Next(0, 55) - 15
+        printfn "%i yards on the play!" yardGain
+        UpdateGameState gameState yardGain
+    else
+        printfn "Invalid selection."
+        printfn ""
+        gameState
+
 let rec PlayGame gameState = 
 
     if gameState.PlaysRemaining = 0
@@ -51,251 +118,12 @@ let rec PlayGame gameState =
         printfn "Offense: Would you like to run or pass?"
         printfn "1. Run"
         printfn "2. Pass"
-        let play = Console.ReadLine()
-        if play = "1"
-        then
-            printfn "Executing run play"
-            let yardGain = rand.Next(0, 15) - 5
-            printfn "%i yards on the play!" yardGain
-            if yardGain >= 100 - gameState.YardLine
-            then
-                let newState = {
-                    Possession = false
-                    CurrentDown = 1
-                    YardLine = 25
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore + 7
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else if yardGain >= gameState.YardsToFirstDown
-            then
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
-            then
-                let newPossession = false
-                let newYardLine  = 100 - (gameState.YardLine + yardGain)
-                let newState = {
-                    Possession = newPossession
-                    CurrentDown = 1
-                    YardLine = newYardLine
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = gameState.CurrentDown + 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = gameState.YardsToFirstDown - yardGain
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-        else if play = "2"
-        then
-            printfn "Executing pass play"
-            let yardGain = rand.Next(0, 55) - 15
-            printfn "%i yards on the play!" yardGain
-            if yardGain >= 100 - gameState.YardLine
-            then
-                let newState = {
-                    Possession = false
-                    CurrentDown = 1
-                    YardLine = 25
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore + 7
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else if yardGain >= gameState.YardsToFirstDown
-            then
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
-            then
-                let newPossession = false
-                let newYardLine  = 100 - (gameState.YardLine + yardGain)
-                let newState = {
-                    Possession = newPossession
-                    CurrentDown = 1
-                    YardLine = newYardLine
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = gameState.CurrentDown + 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = gameState.YardsToFirstDown - yardGain
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-        else
-            printfn "Invalid selection."
-            printfn ""
-            PlayGame gameState
+        PlayGame (ExecutePlay gameState (Console.ReadLine()))
+        
     else
         printfn "Defense: Would you like to defend against run or pass?"
         printfn "1. Run"
         printfn "2. Pass"
-        let play = Console.ReadLine()
-        if play = "1"
-        then
-            printfn "Executing run defense"
-            let yardGain = rand.Next(0, 55) - 15
-            printfn "%i yards on the play!" yardGain
-            if yardGain >= 100 - gameState.YardLine
-            then
-                let newState = {
-                    Possession = true
-                    CurrentDown = 1
-                    YardLine = 25
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore + 7
-                }
-                printfn ""
-                PlayGame newState
-            else if yardGain >= gameState.YardsToFirstDown
-            then
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
-            then
-                let newPossession = true
-                let newYardLine  = 100 - (gameState.YardLine + yardGain)
-                let newState = {
-                    Possession = newPossession
-                    CurrentDown = 1
-                    YardLine = newYardLine
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = gameState.CurrentDown + 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = gameState.YardsToFirstDown - yardGain
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-        else if play = "2"
-        then
-            printfn "Executing pass defense"
-            let yardGain = rand.Next(0, 15) - 5
-            printfn "%i yards on the play!" yardGain
-            if yardGain >= 100 - gameState.YardLine
-            then
-                let newState = {
-                    Possession = true
-                    CurrentDown = 1
-                    YardLine = 25
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore 
-                    TeamTwoScore = gameState.TeamTwoScore + 7
-                }
-                printfn ""
-                PlayGame newState
-            else if yardGain >= gameState.YardsToFirstDown
-            then
-                let newState = {
-                    Possession = false
-                    CurrentDown = 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
-            then
-                let newPossession = true
-                let newYardLine  = 100 - (gameState.YardLine + yardGain)
-                let newState = {
-                    Possession = newPossession
-                    CurrentDown = 1
-                    YardLine = newYardLine
-                    YardsToFirstDown = 10
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-            else
-                let newState = {
-                    Possession = gameState.Possession
-                    CurrentDown = gameState.CurrentDown + 1
-                    YardLine = gameState.YardLine + yardGain
-                    YardsToFirstDown = gameState.YardsToFirstDown - yardGain
-                    PlaysRemaining = gameState.PlaysRemaining - 1
-                    TeamOneScore = gameState.TeamOneScore
-                    TeamTwoScore = gameState.TeamTwoScore
-                }
-                printfn ""
-                PlayGame newState
-        else
-            printfn "Invalid selection."
-            printfn ""
-            PlayGame gameState
+        PlayGame (ExecutePlay gameState (Console.ReadLine()))
 
 PlayGame initState
