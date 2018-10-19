@@ -1,7 +1,7 @@
 ﻿open System
 open System.Threading
 
-type gameState = {
+type GameState = {
     Possession : bool
     CurrentDown : int
     YardLine : int
@@ -10,7 +10,8 @@ type gameState = {
     TeamOneScore : int
     TeamTwoScore : int
     }
-    
+type Play = Run | Pass
+
 let initState = {
     Possession = true
     CurrentDown = 1
@@ -20,12 +21,11 @@ let initState = {
     TeamOneScore = 0
     TeamTwoScore = 0
     }
-
 let rand = Random()
 
 let UpdateGameState gameState yardGain = 
-    if yardGain >= 100 - gameState.YardLine
-    then
+    //touchdown
+    if yardGain >= 100 - gameState.YardLine then
         let newState = {
             Possession = not gameState.Possession
             CurrentDown = 1
@@ -36,8 +36,20 @@ let UpdateGameState gameState yardGain =
             TeamTwoScore = if gameState.Possession then gameState.TeamTwoScore else gameState.TeamTwoScore + 7
         }
         newState
-    else if yardGain >= gameState.YardsToFirstDown
-    then
+    //safety
+    else if (yardGain + gameState.YardLine) < 1 then 
+        let newState = {
+            Possession = not gameState.Possession
+            CurrentDown = 1
+            YardLine = 35
+            YardsToFirstDown = 10
+            PlaysRemaining = gameState.PlaysRemaining - 1
+            TeamOneScore = if gameState.Possession then gameState.TeamOneScore else gameState.TeamOneScore + 2
+            TeamTwoScore = if gameState.Possession then gameState.TeamTwoScore + 2 else gameState.TeamTwoScore
+        }
+        newState
+    //first down
+    else if yardGain >= gameState.YardsToFirstDown then
         let newState = {
             Possession = gameState.Possession
             CurrentDown = 1
@@ -48,8 +60,8 @@ let UpdateGameState gameState yardGain =
             TeamTwoScore = gameState.TeamTwoScore
         }
         newState
-    else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown
-    then
+    //turnover
+    else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown then
         let newState = {
             Possession = not gameState.Possession
             CurrentDown = 1
@@ -71,28 +83,23 @@ let UpdateGameState gameState yardGain =
             TeamTwoScore = gameState.TeamTwoScore
         }
         newState
-
 let ExecutePlay gameState chosenPlay = 
-    if (gameState.Possession && chosenPlay = "1") || (not gameState.Possession && chosenPlay = "2")
-    then
-        printfn "Executing run play"
+    //Run offense or Pass defense
+    if (gameState.Possession && chosenPlay = Run) || (not gameState.Possession && chosenPlay = Pass) then
+        if gameState.Possession then printfn "Executing run play"
+        else printfn "Executing pass play"
         let yardGain = rand.Next(0,15) - 5
         printfn "%i yards on the play!" yardGain
         UpdateGameState gameState yardGain
-    else if (gameState.Possession && chosenPlay = "2") || (not gameState.Possession && chosenPlay = "1")
-    then
-        printfn "Executing pass play"
+    //Pass offense or Run defense
+    else
+        if gameState.Possession then printfn "Executing pass play"
+        else printfn "Executing run play"
         let yardGain = rand.Next(0, 55) - 15
         printfn "%i yards on the play!" yardGain
         UpdateGameState gameState yardGain
-    else
-        printfn "Invalid selection."
-        printfn ""
-        gameState
-
-let PrintField possession yardLine = 
-    if possession
-    then
+let DrawField possession yardLine = 
+    if possession then
         let field = "|" + String('-',yardLine-1) + ">" + String('-',99-yardLine) + "|"
         printfn ""
         printfn "%s" field
@@ -102,24 +109,9 @@ let PrintField possession yardLine =
         printfn ""
         printfn "%s" field
         printfn ""
-
-let rec PlayGame gameState = 
-
-    if gameState.PlaysRemaining = 0
-    then
-        printfn "Game over! Final Score: "
-        printfn "Team One: %i" gameState.TeamOneScore
-        printfn "Team Two: %i" gameState.TeamTwoScore
-        printfn ""
-        printfn "Press any key to exit"
-        Console.ReadKey() |> ignore
-        exit 0
-    
-    Thread.Sleep(1500)
-    Console.Clear()
+let DisplayGameInfo gameState = 
     printfn "Current Game State:"
-    if gameState.Possession
-    then printfn "Possession: Team One"
+    if gameState.Possession then printfn "Possession: Team One"
     else printfn "Possession: Team Two"
     printfn "Current Down: %i" gameState.CurrentDown
     printfn "Yard Line: %i" gameState.YardLine
@@ -127,19 +119,30 @@ let rec PlayGame gameState =
     printfn "Number of plays remaining in game: %i" gameState.PlaysRemaining
     printfn "Team One Score: %i" gameState.TeamOneScore
     printfn "Team Two Score: %i" gameState.TeamTwoScore
-    PrintField gameState.Possession gameState.YardLine
+    DrawField gameState.Possession gameState.YardLine
+    if gameState.Possession then printfn "Offense: Would you like to run or pass?"
+    else printfn "Defense: Would you like to defend against run or pass?"
+    printfn "1. Run"
+    printfn "2. Pass"
+let EndGame gameState =
+    printfn "Game over! Final Score: "
+    printfn "Team One: %i" gameState.TeamOneScore
+    printfn "Team Two: %i" gameState.TeamTwoScore
+    printfn ""
+    printfn "Press any key to exit"
+    Console.ReadKey() |> ignore
+    exit 0
+let rec PlayGame gameState = 
+    Thread.Sleep(1000)
+    Console.Clear()
+    if gameState.PlaysRemaining = 0 then EndGame gameState
+    DisplayGameInfo gameState
 
-    if gameState.Possession
-    then
-        printfn "Offense: Would you like to run or pass?"
-        printfn "1. Run"
-        printfn "2. Pass"
-        PlayGame (ExecutePlay gameState (Console.ReadLine()))
-        
+    let input = Console.ReadLine()
+    if (input = "1") then PlayGame (ExecutePlay gameState (Run))
+    else if (input = "2") then PlayGame (ExecutePlay gameState (Pass))
     else
-        printfn "Defense: Would you like to defend against run or pass?"
-        printfn "1. Run"
-        printfn "2. Pass"
-        PlayGame (ExecutePlay gameState (Console.ReadLine()))
-
+        printfn "Invalid selection"
+        PlayGame gameState
+        
 PlayGame initState
