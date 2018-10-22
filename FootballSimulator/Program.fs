@@ -94,16 +94,13 @@ let ExecutePlay gameState chosenPlay =
         printfn "%i yards on the play!" yardGain
         UpdateGameState gameState yardGain
 let DrawField possession yardLine = 
-    if possession then
-        let field = "|" + String('-',yardLine-1) + ">" + String('-',99-yardLine) + "|"
-        printfn ""
-        printfn "%s" field
-        printfn ""
-    else
-        let field = "|" + String('-',99-yardLine) + "<" + String('-',yardLine-1) + "|"
-        printfn ""
-        printfn "%s" field
-        printfn ""
+    let field = if possession then
+                    "|" + String('-',yardLine-1) + ">" + String('-',99-yardLine) + "|"
+                else
+                    "|" + String('-',99-yardLine) + "<" + String('-',yardLine-1) + "|"
+    printfn ""
+    printfn "%s" field
+    printfn ""
 let DisplayGameInfo gameState = 
     printfn "Current Game State:"
     if gameState.Possession then printfn "Possession: Team One"
