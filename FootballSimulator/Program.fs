@@ -26,7 +26,7 @@ let rand = Random()
 let UpdateGameState gameState yardGain = 
     //touchdown
     if yardGain >= 100 - gameState.YardLine then
-        let newState = {
+        {
             Possession = not gameState.Possession
             CurrentDown = 1
             YardLine = 25
@@ -35,10 +35,9 @@ let UpdateGameState gameState yardGain =
             TeamOneScore = if gameState.Possession then gameState.TeamOneScore + 7 else gameState.TeamOneScore
             TeamTwoScore = if gameState.Possession then gameState.TeamTwoScore else gameState.TeamTwoScore + 7
         }
-        newState
     //safety
-    else if (yardGain + gameState.YardLine) < 1 then 
-        let newState = {
+    else if (yardGain + gameState.YardLine) < 1 then
+        {
             Possession = not gameState.Possession
             CurrentDown = 1
             YardLine = 35
@@ -47,10 +46,9 @@ let UpdateGameState gameState yardGain =
             TeamOneScore = if gameState.Possession then gameState.TeamOneScore else gameState.TeamOneScore + 2
             TeamTwoScore = if gameState.Possession then gameState.TeamTwoScore + 2 else gameState.TeamTwoScore
         }
-        newState
     //first down
     else if yardGain >= gameState.YardsToFirstDown then
-        let newState = {
+        {
             Possession = gameState.Possession
             CurrentDown = 1
             YardLine = gameState.YardLine + yardGain
@@ -59,10 +57,9 @@ let UpdateGameState gameState yardGain =
             TeamOneScore = gameState.TeamOneScore
             TeamTwoScore = gameState.TeamTwoScore
         }
-        newState
     //turnover
     else if gameState.CurrentDown = 4 && yardGain < gameState.YardsToFirstDown then
-        let newState = {
+        {
             Possession = not gameState.Possession
             CurrentDown = 1
             YardLine = 100 - (gameState.YardLine + yardGain)
@@ -71,9 +68,8 @@ let UpdateGameState gameState yardGain =
             TeamOneScore = gameState.TeamOneScore
             TeamTwoScore = gameState.TeamTwoScore
         }
-        newState
     else
-        let newState = {
+        {
             Possession = gameState.Possession
             CurrentDown = gameState.CurrentDown + 1
             YardLine = gameState.YardLine + yardGain
@@ -82,7 +78,6 @@ let UpdateGameState gameState yardGain =
             TeamOneScore = gameState.TeamOneScore
             TeamTwoScore = gameState.TeamTwoScore
         }
-        newState
 let ExecutePlay gameState chosenPlay = 
     //Run offense or Pass defense
     if (gameState.Possession && chosenPlay = Run) || (not gameState.Possession && chosenPlay = Pass) then
